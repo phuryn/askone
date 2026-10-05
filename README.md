@@ -6,7 +6,7 @@
 
 This repository is AskOne's public **issue tracker** and the source of its open-source **[MCP server](#mcp-server)**. The AskOne app itself is not open source.
 
-- **Report a bug or ask for a feature:** [open an issue](https://github.com/phuryn/askone/issues/new). Include the room's six-character code if it is about a room, and where you use AskOne: in a browser, in Zoom, in Google Meet, in ChatGPT or through MCP.
+- **Report a bug or ask for a feature:** [open an issue](https://github.com/phuryn/askone/issues/new). Say where you use AskOne: in a browser, in Zoom, in Google Meet, in ChatGPT or through MCP. Issues are public and a room's code lets anyone join it, so never post a code here; if the problem is about a specific room, send the code through the [support page](https://askone.org/support).
 - **Pull requests and code contributions are not accepted.**
 - Do not post personal data, or anything you would not want public, in an issue. For privacy or data requests, use the contact on the [support page](https://askone.org/support).
 
@@ -15,6 +15,12 @@ This repository is AskOne's public **issue tracker** and the source of its open-
 The AskOne MCP server lets an AI agent read your organization's rooms, audience questions and poll results, for example to draft a FAQ after a session. It is read-only: it cannot create, moderate or delete anything.
 
 Both ways of connecting use an **API token**. An organization admin creates one in AskOne: open the organization switcher, choose **Manage**, then **API tokens**. The token can read every room in that organization, including pending questions and private poll results, so treat it like a password and keep it out of shared configuration.
+
+The commands below read the token from `ASKONE_API_TOKEN`. Set it with a prompt, so it stays out of your shell history:
+
+```bash
+read -rsp 'AskOne API token: ' ASKONE_API_TOKEN; echo; export ASKONE_API_TOKEN
+```
 
 ### Hosted: nothing to install
 
@@ -27,12 +33,12 @@ claude mcp add --transport http askone https://askone.org/api/mcp \
   --header "Authorization: Bearer $ASKONE_API_TOKEN"
 ```
 
-### Local: this repository (Node.js 20.3+)
+### Local: this repository (Node.js 20.3+ and Git)
 
 Claude Code:
 
 ```bash
-claude mcp add askone -e ASKONE_API_TOKEN=your-token -- npx -y github:phuryn/askone#v1.1.0
+claude mcp add askone -e ASKONE_API_TOKEN="$ASKONE_API_TOKEN" -- npx -y github:phuryn/askone#v1.1.0
 ```
 
 Claude Desktop: download `askone.mcpb` from the [latest release](https://github.com/phuryn/askone/releases/latest) and open it. Desktop asks for the token and stores it as a secret.

@@ -19,7 +19,7 @@
     {
       "registryType": "mcpb",
       "identifier": "https://github.com/phuryn/askone/releases/download/v1.1.0/askone.mcpb",
-      "fileSha256": "04b0b9a48b9a5589188906d36be4fe79c4c55f083fa8e8692c92f25122bb862a",
+      "fileSha256": "c2045190889acc28f78cff7485b622c226a91a125f1a5f94cf33160c09bebc36",
       "transport": {
         "type": "stdio"
       },

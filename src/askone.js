@@ -7,6 +7,7 @@ const ROOM_CODE = /^[A-Za-z0-9]{6}$/;
 const TOKEN = /^[!-~]{1,512}$/;
 const PAGE_LIMIT = 100;
 const REQUEST_TIMEOUT_MS = 30_000;
+const MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 export const MAX_QA_PAGES = 20;
 // Below the server's 1,000,000-character reply cap, which keeps far under the SDK's 10 MB limit.
 export const MAX_QA_CHARS = 900_000;
@@ -66,13 +67,15 @@ export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone
     } catch (error) {
       throw transportError(error, signal, origin);
     }
-    let body = null;
+    let raw;
     try {
-      body = await response.json();
+      raw = await readBounded(response);
     } catch (error) {
-      // Malformed JSON is judged below; a body cut off by cancellation or the network is not.
-      if (!(error instanceof SyntaxError)) throw transportError(error, signal, origin);
+      if (error instanceof AskOneError) throw error;
+      throw transportError(error, signal, origin);
     }
+    let body = null;
+    try { body = JSON.parse(raw); } catch { /* malformed JSON is judged below */ }
     if (!response.ok) {
       // The server's own wording is passed on, but bounded and never with the token in it.
       const error = body?.error ?? {};
@@ -97,6 +100,29 @@ export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone
     getSurveys: async (code, signal) =>
       get(`/api/v1/rooms/${roomCode(code)}/surveys`, {}, (body) => Array.isArray(body.surveys), signal),
   };
+}
+
+// A page of the API is a few hundred KB at most; refuse anything far larger before parsing it.
+async function readBounded(response) {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_RESPONSE_BYTES) {
+        await reader.cancel();
+        throw new AskOneError(502, "response_too_large", "AskOne returned more data than one request should (over 5 MB).");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks));
 }
 
 // Never pass a transport error's message through: it can quote request headers.

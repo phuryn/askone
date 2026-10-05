@@ -149,8 +149,8 @@ test("keeps a large FAQ under the reply size budget and says so", () => {
 
 test("a body cut off by cancellation is reported as cancelled, not as a bad URL", async () => {
   const controller = new AbortController();
-  const fetchImpl = async () => ({ ok: true, status: 200, headers: new Headers(),
-    json: async () => { controller.abort(); throw new DOMException("aborted", "AbortError"); } });
+  const body = new ReadableStream({ pull() { controller.abort(); throw new DOMException("aborted", "AbortError"); } });
+  const fetchImpl = async () => new Response(body, { status: 200 });
   const error = await createClient({ token: "t", fetchImpl }).listRooms({}, controller.signal).catch((e) => e);
   assert.equal(error.code, "cancelled");
 });
@@ -168,4 +168,14 @@ test("bounds and redacts error text from the server", async () => {
   assert.equal(error.code, "http_error");
   assert.ok(!error.message.includes("tok-123"));
   assert.ok(error.message.length <= 500);
+});
+
+test("refuses an oversized response before parsing it", async () => {
+  let sent = 0;
+  const chunk = new Uint8Array(1024 * 1024).fill(32);
+  const body = new ReadableStream({ pull(controller) { if (sent++ < 8) controller.enqueue(chunk); else controller.close(); } });
+  const fetchImpl = async () => new Response(body, { status: 200 });
+  const error = await createClient({ token: "t", fetchImpl }).listRooms().catch((e) => e);
+  assert.equal(error.code, "response_too_large");
+  assert.ok(sent <= 7, `read ${sent} chunks`);
 });
