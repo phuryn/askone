@@ -1,0 +1,52 @@
+{
+  "manifest_version": "0.2",
+  "name": "askone",
+  "display_name": "AskOne",
+  "version": "1.1.0",
+  "description": "Read your AskOne live Q&A rooms, audience questions and poll results, and draft a FAQ from them.",
+  "long_description": "AskOne is live Q&A and polling for talks, webinars, classes and meetings. This extension gives Claude read-only access to your organization's rooms: list them, read a room's questions as a Markdown FAQ draft (answered first, approved by votes, pending last), read raw question pages, and read aggregate poll, quiz, rating and word-cloud results. It cannot create, moderate or delete anything. An organization admin creates the API token in AskOne: organization switcher, Manage, API tokens.",
+  "author": { "name": "HURYN Sp. z o.o.", "url": "https://askone.org" },
+  "homepage": "https://askone.org",
+  "documentation": "https://github.com/phuryn/askone#mcp-server",
+  "support": "https://github.com/phuryn/askone/issues",
+  "repository": { "type": "git", "url": "https://github.com/phuryn/askone" },
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "src/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/src/index.js"],
+      "env": {
+        "ASKONE_API_TOKEN": "${user_config.api_token}",
+        "ASKONE_URL": "${user_config.base_url}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "list_rooms", "description": "List your organization's rooms, newest first, with question and participant counts." },
+    { "name": "get_room_qa", "description": "Read a room's questions as a Markdown FAQ draft." },
+    { "name": "get_room_questions", "description": "Read one page of a room's questions as JSON." },
+    { "name": "get_survey_results", "description": "Read aggregate poll, quiz, rating and word-cloud results." }
+  ],
+  "user_config": {
+    "api_token": {
+      "type": "string",
+      "title": "AskOne API token",
+      "description": "Created by an organization admin in AskOne: organization switcher → Manage → API tokens.",
+      "sensitive": true,
+      "required": true
+    },
+    "base_url": {
+      "type": "string",
+      "title": "AskOne URL",
+      "description": "Change only for a self-hosted installation.",
+      "default": "https://askone.org",
+      "required": false
+    }
+  },
+  "keywords": ["askone", "live q&a", "polls", "audience questions", "faq", "slido alternative"],
+  "license": "MIT",
+  "privacy_policies": ["https://askone.org/privacy"],
+  "compatibility": { "platforms": ["darwin", "win32", "linux"], "runtimes": { "node": ">=20.3.0" } }
+}

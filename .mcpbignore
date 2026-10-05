@@ -1,0 +1,7 @@
+test/
+.git/
+.github/
+*.mcpb
+_*.mjs
+README.md
+server.json

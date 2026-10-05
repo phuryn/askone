@@ -1,0 +1,171 @@
+// AskOne host API client (https://askone.org/api/v1) and the Q&A Markdown
+// that get_room_qa returns. Read-only: the API cannot change anything.
+
+export const DEFAULT_URL = "https://askone.org";
+const ROOM_CODE = /^[A-Za-z0-9]{6}$/;
+// Visible ASCII only: anything else could make fetch echo the header value in an error.
+const TOKEN = /^[!-~]{1,512}$/;
+const PAGE_LIMIT = 100;
+const REQUEST_TIMEOUT_MS = 30_000;
+export const MAX_QA_PAGES = 20;
+// Below the server's 1,000,000-character reply cap, which keeps far under the SDK's 10 MB limit.
+export const MAX_QA_CHARS = 900_000;
+// Room for the closing note, so truncating never pushes a reply over the budget.
+const NOTE_RESERVE = 300;
+
+export class AskOneError extends Error {
+  constructor(status, code, message, retryAfter) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.retryAfter = retryAfter;
+  }
+}
+
+export function roomCode(code) {
+  if (typeof code !== "string" || !ROOM_CODE.test(code)) {
+    throw new AskOneError(400, "invalid_request", "A room code is six letters or digits, for example ABC234.");
+  }
+  return code;
+}
+
+export function baseOrigin(value = DEFAULT_URL) {
+  let url;
+  // The value is never echoed: it could carry credentials (https://user:secret@host).
+  try { url = new URL(value); } catch { throw new Error("ASKONE_URL is not a valid URL."); }
+  if (url.username || url.password) throw new Error("ASKONE_URL must not contain a user name or password.");
+  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  if (url.protocol !== "https:" && !(local && url.protocol === "http:")) {
+    throw new Error("ASKONE_URL must use https (http is allowed only for localhost).");
+  }
+  return url.origin;
+}
+
+export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone-mcp", fetchImpl = globalThis.fetch }) {
+  if (!token) {
+    throw new Error("ASKONE_API_TOKEN is not set. An organization admin creates one in AskOne: organization switcher → Manage → API tokens.");
+  }
+  if (!TOKEN.test(token)) {
+    throw new Error("ASKONE_API_TOKEN contains spaces, line breaks or other characters a token never has. Copy it again from AskOne.");
+  }
+  const origin = baseOrigin(baseUrl);
+
+  async function get(path, params, shape, signal) {
+    const url = new URL(path, origin);
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
+    }
+    let response;
+    try {
+      // redirect: "error" keeps the token from following a redirect to another host.
+      response = await fetchImpl(url, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "User-Agent": userAgent },
+        redirect: "error",
+        signal: withTimeout(signal),
+      });
+    } catch (error) {
+      throw transportError(error, signal, origin);
+    }
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (error) {
+      // Malformed JSON is judged below; a body cut off by cancellation or the network is not.
+      if (!(error instanceof SyntaxError)) throw transportError(error, signal, origin);
+    }
+    if (!response.ok) {
+      // The server's own wording is passed on, but bounded and never with the token in it.
+      const error = body?.error ?? {};
+      const code = typeof error.code === "string" && /^[a-z_]{1,64}$/.test(error.code) ? error.code : "http_error";
+      const message = typeof error.message === "string"
+        ? error.message.split(token).join("[redacted]").slice(0, 500)
+        : `AskOne returned HTTP ${response.status}.`;
+      throw new AskOneError(response.status, code, message, response.headers.get("retry-after") ?? undefined);
+    }
+    if (!body || typeof body !== "object" || !shape(body)) {
+      throw new AskOneError(502, "invalid_response", `${origin} did not answer like the AskOne API. Check ASKONE_URL.`);
+    }
+    return body;
+  }
+
+  const roomPage = (body) => body.room && typeof body.room === "object" && Array.isArray(body.questions);
+  return {
+    listRooms: async ({ limit, cursor } = {}, signal) =>
+      get("/api/v1/rooms", { limit, cursor }, (body) => Array.isArray(body.rooms), signal),
+    getRoom: async (code, { limit, cursor, sort } = {}, signal) =>
+      get(`/api/v1/rooms/${roomCode(code)}`, { limit, cursor, sort }, roomPage, signal),
+    getSurveys: async (code, signal) =>
+      get(`/api/v1/rooms/${roomCode(code)}/surveys`, {}, (body) => Array.isArray(body.surveys), signal),
+  };
+}
+
+// Never pass a transport error's message through: it can quote request headers.
+function transportError(error, signal, origin) {
+  if (signal?.aborted) return new AskOneError(499, "cancelled", "The request was cancelled.");
+  if (error?.name === "TimeoutError") return new AskOneError(504, "timeout", "AskOne did not answer within 30 seconds.");
+  return new AskOneError(502, "network_error", `Could not reach ${origin}.`);
+}
+
+function withTimeout(signal) {
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+/** Every visible question in a room, up to MAX_QA_PAGES pages of 100. */
+export async function fetchAllQuestions(client, code, { maxPages = MAX_QA_PAGES, signal } = {}) {
+  const questions = [];
+  let room;
+  let cursor;
+  for (let page = 0; page < maxPages; page++) {
+    if (signal?.aborted) throw new AskOneError(499, "cancelled", "The request was cancelled.");
+    const result = await client.getRoom(code, { limit: PAGE_LIMIT, sort: "top", cursor }, signal);
+    room = result.room;
+    questions.push(...result.questions);
+    cursor = result.next_cursor;
+    if (!cursor) return { room, questions, truncated: false };
+  }
+  return { room, questions, truncated: true };
+}
+
+/** Plain authored text stays text when pasted into a Markdown renderer. */
+export function markdownText(value) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/([\\`*_{}\[\]()#+.!|~-])/g, (match) => `\\${match}`).replace(/\r\n?/g, "\n");
+}
+
+/** FAQ order: answered first, then approved by votes, pending last and marked. */
+export function roomQaMarkdown({ room, questions, truncated }, maxChars = MAX_QA_CHARS) {
+  const rank = { answered: 0, approved: 1, pending: 2 };
+  const ordered = [...questions].sort((a, b) => rank[a.status] - rank[b.status] || b.votes - a.votes
+    || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
+  const lines = [`# ${markdownText(room.name)} — Q&A`, "", `Room: ${room.code}`, ""];
+  let size = lines.join("\n").length;
+  let included = 0;
+  for (const question of ordered) {
+    let answer;
+    if (question.answer) {
+      const label = question.status === "answered" ? "Answer" : "Host comment";
+      answer = `${label}:\n\n${markdownText(question.answer).replaceAll("\n", "\n\n")}`;
+    } else {
+      answer = question.status === "answered" ? "Answered in the session; no written answer." : "No written answer.";
+    }
+    const block = [`## ${markdownText(question.body).replaceAll("\n", " ")}`, "",
+      `Votes: ${question.votes}${question.status === "pending" ? " · Pending moderation" : ""}`, "", answer, ""];
+    const blockSize = block.join("\n").length + 1;
+    if (size + blockSize > maxChars - NOTE_RESERVE) break;
+    lines.push(...block);
+    size += blockSize;
+    included++;
+  }
+  if (!ordered.length) lines.push("No questions in this room.", "");
+  if (truncated) {
+    lines.push(`This room has more than ${MAX_QA_PAGES * PAGE_LIMIT} questions; only the first ${ordered.length} by AskOne's top order were read.`, "");
+  }
+  if (included < ordered.length) {
+    lines.push(`Only ${included} of the ${ordered.length} questions read fit in one reply.`, "");
+  }
+  if (truncated || included < ordered.length) {
+    lines.push("Use get_room_questions to page through the rest.", "");
+  }
+  return lines.join("\n");
+}
