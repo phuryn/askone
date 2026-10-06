@@ -18,7 +18,7 @@ const annotations = { readOnlyHint: true, destructiveHint: false, idempotentHint
 const createAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
 const lifecycleAnnotations = { ...createAnnotations, destructiveHint: true, idempotentHint: true };
 const requestId = z.string().uuid().optional().describe("Optional UUID; resend the same one to retry safely after a lost reply");
-const surveyId = z.string().uuid().describe("survey_id from get_survey_results");
+const surveyId = z.string().uuid().describe("The survey's id from get_survey_results");
 const questionId = z.string().uuid().describe("Question id from get_room_questions");
 
 let client;
@@ -120,7 +120,7 @@ server.registerTool("close_room", {
 
 server.registerTool("create_survey", {
   title: "Add and launch a poll",
-  description: "Add a poll, quiz, rating or word cloud to a room and launch it so the audience answers on their phones (launching needs an open room); launch=false saves a draft instead. Use it during a session to ask the audience something. type=poll takes 2-8 options (allow_multiple for several choices), quiz takes options plus correct_option (zero-based), rating takes scale 5 or 10, word_cloud takes no options. Results are shown to the audience by default; show_results=false keeps them private. Returns the survey with its id and the request_id; keep that request_id, because calling again with it and launch=true is how a saved draft is launched once the room is open. Read answers with get_survey_results and end a live survey with close_survey. Needs rooms:write; pass a request_id UUID and resend the same one to retry safely.",
+  description: "Add a poll, quiz, rating or word cloud to a room and launch it so the audience answers on their phones (launching needs an open room); launch=false saves a draft instead. Use it during a session to ask the audience something. type=poll takes 2-8 options (allow_multiple for several choices), quiz takes options plus correct_option (zero-based), rating takes scale 5 or 10, word_cloud takes no options. Results are shown to the audience by default; show_results=false keeps them private. Returns the survey with its id and the request_id; keep that request_id, because calling again with the same survey fields, that request_id and launch=true is how a saved draft is launched once the room is open. Read answers with get_survey_results and end a live survey with close_survey. Needs rooms:write; pass a request_id UUID and resend the same one to retry safely.",
   inputSchema: {
     code,
     question: z.string().trim().min(1).max(200).describe("The question, 1-200 characters"),
