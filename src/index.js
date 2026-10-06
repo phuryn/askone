@@ -140,14 +140,14 @@ server.registerTool("create_survey", {
 
 server.registerTool("close_survey", {
   title: "Close a poll",
-  description: "Close a live poll, quiz, rating or word cloud so it stops taking answers; its results stay readable. Use it once a poll has collected its answers, or close_room to end every live survey with the room. show_results sets whether the audience may see this survey's results (false hides them, true allows them); phones and the wall show the live surveys or the most recently closed batch, so an older survey does not return to the screen. Works on an already-closed survey too, but not on a draft. Get survey_id from get_survey_results. Returns the survey, the room and its links. Needs rooms:write.",
-  inputSchema: { code, survey_id: surveyId, show_results: z.boolean().optional().describe("false removes the closed results from screens; true shows them again") },
+  description: "Close a live poll, quiz, rating or word cloud so it stops taking answers; its results stay readable. Use it once a survey has collected its answers, calling it once per survey to close several, or use close_room to end every live survey together with the room. show_results sets whether the audience may see this survey's results (false hides them, true allows them); phones and the wall show the live surveys or the most recently closed batch, so an older survey does not return to the screen. Works on an already-closed survey too, but not on a draft. Get survey_id from get_survey_results. Returns the survey, the room and its links. Needs rooms:write.",
+  inputSchema: { code, survey_id: surveyId, show_results: z.boolean().optional().describe("false hides this survey's results from the audience; true allows them, though screens show only the live surveys or the latest closed batch") },
   annotations: lifecycleAnnotations,
 }, tool(async ({ code, survey_id, show_results }, signal) => text(await api().closeSurvey(code, survey_id, { show_results }, signal))));
 
 server.registerTool("moderate_question", {
   title: "Approve or hide a question",
-  description: "Approve a waiting question so the room sees it, or hide it so nobody does (action=approve or hide). Both act only on waiting (pending) questions, so an approved question cannot be hidden here. Use it in rooms with human or AI moderation, where new questions wait for review; get ids from get_room_questions. Approve also restores a question the AI hid, but only by an id you already have, because reads never return hidden questions; a question a person hid cannot be restored. Returns the question's id and new status. Needs rooms:write.",
+  description: "Approve a waiting question so the room sees it, or hide it so nobody does (action=approve or hide). Hide accepts only waiting (pending) questions, so an approved question cannot be hidden here; approve accepts waiting questions and questions the AI hid. Use it in rooms with human or AI moderation, where new questions wait for review; get ids from get_room_questions. An AI-hidden question can be approved only by an id you already have, because reads never return hidden questions; a question a person hid cannot be restored. Returns the question's id and new status. Needs rooms:write.",
   inputSchema: { code, question_id: questionId, action: z.enum(["approve", "hide"]) },
   annotations: lifecycleAnnotations,
 }, tool(async ({ code, question_id, action }, signal) => text(await api().moderateQuestion(code, question_id, action, signal))));

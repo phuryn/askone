@@ -84,8 +84,8 @@ Host actions (a token created after the host actions shipped):
 | `open_room` | Opens a prepared room or reopens a closed one, within your plan's open-room limit. |
 | `close_room` | Closes a room and its live polls. Content stays readable; participation stops. |
 | `create_survey` | Adds a poll, quiz, rating or word cloud to a room and launches it (`launch: false` saves a draft). Results are shown to the audience by default; `show_results: false` keeps them private. |
-| `close_survey` | Closes a live poll; `show_results: false` removes its results from the screens, `true` shows them again. |
-| `moderate_question` | Approves or hides a waiting question (`action: approve` or `hide`). |
+| `close_survey` | Closes a live poll, quiz, rating or word cloud. `show_results: false` hides its results from the audience; `true` allows them, though phones and the wall show only the live surveys or the latest closed batch. |
+| `moderate_question` | Approves or hides a waiting question (`action: approve` or `hide`). Approve also restores a question the AI hid, given its id. |
 | `answer_question` | Marks an approved question answered, with an optional written `answer`. |
 
 Rooms land in the token's organization, on its plan and with its branding, exactly as if an admin had made them in AskOne. `create_room` and `create_survey` take an optional `request_id` (a UUID): resend the same one after a lost reply and you get the same room or poll, not a second one.
