@@ -3,7 +3,7 @@
   "name": "io.github.phuryn/askone",
   "title": "AskOne",
   "description": "Run AskOne live Q&A and polls with free AI moderation: start rooms, launch polls, draft a FAQ.",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "websiteUrl": "https://askone.org",
   "repository": {
     "url": "https://github.com/phuryn/askone",
@@ -19,7 +19,7 @@
     {
       "registryType": "npm",
       "identifier": "askone-mcp",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "transport": {
         "type": "stdio"
       },
@@ -43,8 +43,8 @@
     },
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/phuryn/askone/releases/download/v1.2.2/askone.mcpb",
-      "fileSha256": "664de930803010a50ac1e8d0c614817d1a5eedeb2c95c5c4b61c1cae8a2a9472",
+      "identifier": "https://github.com/phuryn/askone/releases/download/v1.2.3/askone.mcpb",
+      "fileSha256": "9d7028614abf86258ad918f83bdf589b10bae367dfce1c11ab1ae57f5f243676",
       "transport": {
         "type": "stdio"
       },
