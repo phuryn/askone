@@ -6,7 +6,7 @@
 
 The AskOne MCP server lets an AI agent run your organization's live audience Q&A and polls: start a room, add and launch a poll, approve or hide waiting questions, mark questions answered, close the room, and afterwards read the questions as a FAQ draft and the poll results. It cannot ask questions or vote: those are the audience's, and an agent that could would be stuffing the queue and the ranking. Nothing can be deleted through it.
 
-[AskOne](https://askone.org) is live Q&A and polling for talks, webinars, classes and meetings. Your audience joins from a link or QR code on their phones, with no account and no app, asks questions anonymously, upvotes, and answers polls. It runs in the browser, in Zoom, in Google Meet and in ChatGPT.
+[AskOne](https://askone.org) is live Q&A and polling for talks, webinars, classes and meetings. Your audience joins from a link or QR code on their phones, with no account and no app, asks questions anonymously, upvotes, and answers polls. **AI moderation is free on every plan**: it screens every question before it reaches the room, so nothing hostile lands on the wall. It runs in the browser, in Zoom, in Google Meet and in ChatGPT.
 
 Use it hosted at `https://askone.org/api/mcp` (nothing to install), or run this open-source server locally with `npx -y askone-mcp` (MIT). It is listed in the official MCP Registry as `io.github.phuryn/askone`.
 
