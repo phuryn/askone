@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "askone",
   "display_name": "AskOne",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Run your AskOne live Q&A from Claude: start rooms, launch polls, moderate and answer questions, then draft a FAQ from them.",
   "long_description": "AskOne is live Q&A and polling for talks, webinars, classes and meetings. This extension lets Claude run your organization's rooms: list them, create, open and close rooms, add and launch polls, quizzes, ratings and word clouds, close polls, approve or hide waiting questions, mark questions answered with a written answer, read a room's questions as a Markdown FAQ draft, and read poll results. It cannot ask questions, vote or delete anything. An organization admin creates the API token in AskOne: organization switcher, Manage, API tokens; tokens created before the host actions shipped can only read.",
   "author": {

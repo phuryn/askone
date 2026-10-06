@@ -1,6 +1,6 @@
 {
   "name": "askone-mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "MCP server for AskOne live Q&A: start rooms, launch polls, moderate and answer questions, read the Q&A as a FAQ draft and the poll results.",
   "mcpName": "io.github.phuryn/askone",
   "type": "module",

@@ -12,7 +12,7 @@ This repository is AskOne's public **issue tracker** and the source of its open-
 
 ## MCP server
 
-[![AskOne MCP connector – tool definition quality and endpoint health on Glama](https://glama.ai/mcp/connectors/io.github.phuryn/askone/badges/score.svg)](https://glama.ai/mcp/connectors/io.github.phuryn/askone)
+[![CI](https://github.com/phuryn/askone/actions/workflows/ci.yml/badge.svg)](https://github.com/phuryn/askone/actions/workflows/ci.yml) [![AskOne MCP connector – tool definition quality and endpoint health on Glama](https://glama.ai/mcp/connectors/io.github.phuryn/askone/badges/score.svg)](https://glama.ai/mcp/connectors/io.github.phuryn/askone)
 
 The AskOne MCP server lets an AI agent run your organization's live Q&A: start a room, add and launch a poll, approve or hide waiting questions, mark questions answered, close the room, and afterwards read the questions as a FAQ draft and the poll results. It cannot ask questions or vote: those are the audience's, and an agent that could would be stuffing the queue and the ranking. Nothing can be deleted through it.
 
@@ -59,7 +59,7 @@ Cursor, Windsurf, Cline and other clients that take a JSON configuration:
 }
 ```
 
-To run it straight from this repository instead of npm (needs Git): `npx -y github:phuryn/askone#v1.2.0`.
+To run it straight from this repository instead of npm (needs Git): `npx -y github:phuryn/askone#v1.2.1`.
 
 For a self-hosted AskOne, also set `ASKONE_URL` to its address (https only).
 

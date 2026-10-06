@@ -265,3 +265,21 @@ test("a write receipt must carry the room and the object it names", async () => 
     assert.equal((await call.catch((e) => e)).code, "invalid_response", JSON.stringify(reply));
   }
 });
+
+test("every tool description says when to use it, and every host action says it needs rooms:write", async () => {
+  const { Client } = await import("@modelcontextprotocol/sdk/client/index.js");
+  const { StdioClientTransport } = await import("@modelcontextprotocol/sdk/client/stdio.js");
+  const client = new Client({ name: "descriptions", version: "0" });
+  await client.connect(new StdioClientTransport({ command: process.execPath, args: ["src/index.js"], env: { ...process.env, ASKONE_API_TOKEN: "x" } }));
+  try {
+    const { tools } = await client.listTools();
+    assert.equal(tools.length, 11);
+    for (const tool of tools) {
+      assert.match(tool.description, /\bUse it\b/, tool.name);
+      assert.ok(tool.description.length < 700, tool.name);
+      if (!tool.annotations.readOnlyHint) assert.match(tool.description, /rooms:write/, tool.name);
+    }
+  } finally {
+    await client.close();
+  }
+});
