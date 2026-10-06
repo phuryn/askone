@@ -36,6 +36,12 @@ if (process.argv.includes("--verify-release")) {
   const published = sha256(Buffer.from(await response.arrayBuffer()));
   if (published !== bundle.fileSha256) fail(`published asset is ${published}, server.json says ${bundle.fileSha256}`);
   console.log(`✓ v${version} release asset matches server.json (${published})`);
+  // npm answers a publish with 202 and processes it; the MCP Registry refuses the entry until the version is visible.
+  const npmResponse = await fetch(`https://registry.npmjs.org/askone-mcp/${version}`);
+  if (!npmResponse.ok) fail(`askone-mcp@${version} is not on npm yet (HTTP ${npmResponse.status}); wait and rerun before mcp-publisher publish`);
+  const npmManifest = await npmResponse.json();
+  if (npmManifest.mcpName !== server.name) fail(`npm's askone-mcp@${version} has mcpName ${npmManifest.mcpName}, expected ${server.name}`);
+  console.log(`✓ askone-mcp@${version} is on npm with mcpName ${server.name}`);
 } else {
   execFileSync("npx", ["-y", MCPB_CLI, "pack", ".", "askone.mcpb"], { stdio: "inherit", shell: process.platform === "win32" });
   bundle.fileSha256 = sha256(readFileSync("askone.mcpb"));
