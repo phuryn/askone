@@ -74,9 +74,9 @@
       "headers": [
         {
           "name": "Authorization",
-          "description": "AskOne API token (organization admin: Manage → API tokens)",
+          "description": "AskOne API token (organization admin: Manage → API tokens). Optional: clients that support OAuth sign in with an AskOne account instead",
           "value": "Bearer {askone_api_token}",
-          "isRequired": true,
+          "isRequired": false,
           "isSecret": true,
           "variables": {
             "askone_api_token": {
