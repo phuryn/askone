@@ -61,7 +61,7 @@ Cursor, Windsurf, Cline and other clients that take a JSON configuration:
 }
 ```
 
-To run it straight from this repository instead of npm (needs Git): `npx -y github:phuryn/askone#v1.2.1`.
+To run it straight from this repository instead of npm (needs Git): `npx -y github:phuryn/askone#v1.2.2`.
 
 For a self-hosted AskOne, also set `ASKONE_URL` to its address (https only).
 
