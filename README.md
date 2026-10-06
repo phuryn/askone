@@ -12,6 +12,8 @@ This repository is AskOne's public **issue tracker** and the source of its open-
 
 ## MCP server
 
+[![AskOne MCP connector – tool definition quality and endpoint health on Glama](https://glama.ai/mcp/connectors/io.github.phuryn/askone/badges/score.svg)](https://glama.ai/mcp/connectors/io.github.phuryn/askone)
+
 The AskOne MCP server lets an AI agent read your organization's rooms, audience questions and poll results, for example to draft a FAQ after a session. It is read-only: it cannot create, moderate or delete anything.
 
 Both ways of connecting use an **API token**. An organization admin creates one in AskOne: open the organization switcher, choose **Manage**, then **API tokens**. The token can read every room in that organization, including pending questions and private poll results, so treat it like a password and keep it out of shared configuration.
