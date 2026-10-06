@@ -31,7 +31,7 @@ jobs:
           out=$( { printf '%s\n' \
             '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
             '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
-            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'; sleep 3; } | timeout 15 node src/index.js || true)
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'; sleep 3; } | timeout 15 node src/index.js)
           echo "$out"
           echo "$out" | grep -q '"name":"askone"'
           echo "$out" | grep -q '"create_room"'
