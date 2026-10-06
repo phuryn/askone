@@ -33,9 +33,10 @@ npm test
 
 ## Release
 
-1. Set the new version in `package.json`, `manifest.json` and `server.json` (also its MCPB `identifier` URL), and the `#vX.Y.Z` install pin in `README.md`. `npm run bundle` refuses to run until they all agree.
+1. Set the new version in `package.json`, `manifest.json` and `server.json` (its top-level `version`, the npm package `version` and the MCPB `identifier` URL), and the `#vX.Y.Z` install pin in `README.md`. `npm run bundle` refuses to run until they all agree.
 2. Get an independent review of everything since the last tag (`git diff $(git describe --tags --abbrev=0)..HEAD` plus the working tree) from a fresh session with no checklist. Fix, and repeat with another fresh session until a round finds nothing above Low.
 3. `npm run bundle`, then commit and push (`server.json` now carries the new hash).
-4. `gh release create vX.Y.Z askone.mcpb --repo phuryn/askone --target main`
-5. `npm run verify-release` — downloads the asset and compares it with `server.json`.
-6. `mcp-publisher login github -token "$(gh auth token)"` (the login must be `phuryn`), then `mcp-publisher publish`.
+4. `npm publish` (npm account `pawelhuryn`; package `askone-mcp`). The registry checks the published `package.json` for `mcpName`, so this comes before step 7.
+5. `gh release create vX.Y.Z askone.mcpb --repo phuryn/askone --target main`
+6. `npm run verify-release` — downloads the asset and compares it with `server.json`.
+7. `mcp-publisher login github -token "$(gh auth token)"` (the login must be `phuryn`), then `mcp-publisher publish`.

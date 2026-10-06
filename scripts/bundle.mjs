@@ -20,8 +20,12 @@ const bundle = server.packages?.find((item) => item.registryType === "mcpb");
 const expectedUrl = `https://github.com/phuryn/askone/releases/download/v${version}/askone.mcpb`;
 
 if (manifest.version !== version) fail(`manifest.json is ${manifest.version}, package.json is ${version}`);
+const lock = json("package-lock.json");
+if (lock.version !== version || lock.packages?.[""]?.version !== version) fail(`package-lock.json is not ${version}; run npm install --package-lock-only`);
 if (server.version !== version) fail(`server.json is ${server.version}, package.json is ${version}`);
 if (bundle?.identifier !== expectedUrl) fail(`server.json's mcpb identifier should be ${expectedUrl}`);
+const npmPackage = server.packages?.find((item) => item.registryType === "npm");
+if (npmPackage && npmPackage.version !== version) fail(`server.json's npm package is ${npmPackage.version}, package.json is ${version}`);
 if (!readFileSync("README.md", "utf8").includes(`github:phuryn/askone#v${version}`)) {
   fail(`README.md should pin installs to #v${version}`);
 }

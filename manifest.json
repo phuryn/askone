@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "askone",
   "display_name": "AskOne",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Read your AskOne live Q&A rooms, audience questions and poll results, and draft a FAQ from them.",
   "long_description": "AskOne is live Q&A and polling for talks, webinars, classes and meetings. This extension gives Claude read-only access to your organization's rooms: list them, read a room's questions as a Markdown FAQ draft (answered first, approved by votes, pending last), read raw question pages, and read aggregate poll, quiz, rating and word-cloud results. It cannot create, moderate or delete anything. An organization admin creates the API token in AskOne: organization switcher, Manage, API tokens.",
   "author": { "name": "HURYN Sp. z o.o.", "url": "https://askone.org" },

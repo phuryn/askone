@@ -33,12 +33,12 @@ claude mcp add --transport http askone https://askone.org/api/mcp \
   --header "Authorization: Bearer $ASKONE_API_TOKEN"
 ```
 
-### Local: this repository (Node.js 20.3+ and Git)
+### Local: the `askone-mcp` package (Node.js 20.3+)
 
 Claude Code:
 
 ```bash
-claude mcp add askone -e ASKONE_API_TOKEN="$ASKONE_API_TOKEN" -- npx -y github:phuryn/askone#v1.1.0
+claude mcp add askone -e ASKONE_API_TOKEN="$ASKONE_API_TOKEN" -- npx -y askone-mcp
 ```
 
 Claude Desktop: download `askone.mcpb` from the [latest release](https://github.com/phuryn/askone/releases/latest) and open it. Desktop asks for the token and stores it as a secret.
@@ -50,12 +50,14 @@ Cursor, Windsurf, Cline and other clients that take a JSON configuration:
   "mcpServers": {
     "askone": {
       "command": "npx",
-      "args": ["-y", "github:phuryn/askone#v1.1.0"],
+      "args": ["-y", "askone-mcp"],
       "env": { "ASKONE_API_TOKEN": "your-token" }
     }
   }
 }
 ```
+
+To run it straight from this repository instead of npm (needs Git): `npx -y github:phuryn/askone#v1.1.1`.
 
 For a self-hosted AskOne, also set `ASKONE_URL` to its address (https only).
 

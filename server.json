@@ -3,7 +3,7 @@
   "name": "io.github.phuryn/askone",
   "title": "AskOne",
   "description": "Read your live Q&A rooms, audience questions and poll results, and draft a FAQ from them.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "websiteUrl": "https://askone.org",
   "repository": {
     "url": "https://github.com/phuryn/askone",
@@ -17,9 +17,34 @@
   ],
   "packages": [
     {
+      "registryType": "npm",
+      "identifier": "askone-mcp",
+      "version": "1.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "ASKONE_API_TOKEN",
+          "description": "AskOne API token (organization admin: Manage → API tokens)",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "ASKONE_URL",
+          "description": "Only for a self-hosted AskOne",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "default": "https://askone.org"
+        }
+      ]
+    },
+    {
       "registryType": "mcpb",
-      "identifier": "https://github.com/phuryn/askone/releases/download/v1.1.0/askone.mcpb",
-      "fileSha256": "c2045190889acc28f78cff7485b622c226a91a125f1a5f94cf33160c09bebc36",
+      "identifier": "https://github.com/phuryn/askone/releases/download/v1.1.1/askone.mcpb",
+      "fileSha256": "f6593fd22073292e35a3dbb7bbb433efcdc7daa043eae941dc4218841965e094",
       "transport": {
         "type": "stdio"
       },
