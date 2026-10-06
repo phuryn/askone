@@ -108,11 +108,13 @@ export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone
 
   const get = (path, params, shape, signal) => request("GET", path, { params }, shape, signal);
   const post = (path, payload, shape, signal) => request("POST", path, { payload }, shape, signal);
-  const isObject = (value) => Boolean(value) && typeof value === "object";
-  const roomPage = (body) => isObject(body.room) && Array.isArray(body.questions);
-  const hasRoom = (body) => isObject(body.room);
-  const hasSurvey = (body) => isObject(body.room) && isObject(body.survey);
-  const hasQuestion = (body) => isObject(body.room) && isObject(body.question);
+  const isObject = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  const isRoom = (value) => isObject(value) && typeof value.code === "string";
+  const hasId = (value) => isObject(value) && typeof value.id === "string";
+  const roomPage = (body) => isRoom(body.room) && Array.isArray(body.questions);
+  const hasRoom = (body) => isRoom(body.room);
+  const hasSurvey = (body) => isRoom(body.room) && hasId(body.survey);
+  const hasQuestion = (body) => isRoom(body.room) && hasId(body.question);
   const room = (code) => `/api/v1/rooms/${roomCode(code)}`;
   return {
     listRooms: async ({ limit, cursor } = {}, signal) =>

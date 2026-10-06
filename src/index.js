@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// AskOne MCP server (stdio). Wraps the read-only AskOne host API so an agent can
-// list rooms, read a room's Q&A as a FAQ draft, and read poll results.
+// AskOne MCP server (stdio). Wraps the AskOne host API so an agent can run a
+// room — create, open and close it, launch and close polls, approve, hide and answer
+// questions — and read the Q&A as a FAQ draft and the poll results afterwards.
 import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";

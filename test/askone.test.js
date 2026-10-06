@@ -255,3 +255,13 @@ test("a write reply without the expected object is not reported as success", asy
   const error = await createClient({ token: "t", fetchImpl }).moderateQuestion("ABC234", QUESTION, "hide").catch((e) => e);
   assert.equal(error.code, "invalid_response");
 });
+
+test("a write receipt must carry the room and the object it names", async () => {
+  for (const reply of [{ room: [] }, { room: {} }, { room, survey: [] }]) {
+    const { fetchImpl } = fakeFetch([{ body: reply }]);
+    const call = "survey" in reply
+      ? createClient({ token: "t", fetchImpl }).closeSurvey("ABC234", SURVEY, {})
+      : createClient({ token: "t", fetchImpl }).closeRoom("ABC234");
+    assert.equal((await call.catch((e) => e)).code, "invalid_response", JSON.stringify(reply));
+  }
+});
