@@ -131,7 +131,7 @@ server.registerTool("create_survey", {
     scale: z.union([z.literal(5), z.literal(10)]).optional().describe("Rating: 5 (default) or 10 points"),
     low_label: z.string().trim().max(80).optional().describe("Rating: optional label for the lowest point"),
     high_label: z.string().trim().max(80).optional().describe("Rating: optional label for the highest point"),
-    show_results: z.boolean().optional().describe("Default true: the audience sees results after answering and on screens once closed"),
+    show_results: z.boolean().optional().describe("Default true: the audience may see results; false keeps them private. Screens show only the live surveys or the latest closed batch"),
     launch: z.boolean().optional().describe("Default true; false saves a draft"),
     request_id: requestId,
   },

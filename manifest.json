@@ -66,7 +66,7 @@
     },
     {
       "name": "close_survey",
-      "description": "Close a poll and choose whether its results stay on screen."
+      "description": "Close a poll and choose whether the audience may see its results."
     },
     {
       "name": "moderate_question",
