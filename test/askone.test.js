@@ -179,3 +179,79 @@ test("refuses an oversized response before parsing it", async () => {
   assert.equal(error.code, "response_too_large");
   assert.ok(sent <= 7, `read ${sent} chunks`);
 });
+
+const roomBody = { room, join_url: "https://askone.org/r/ABC234", projector_url: "https://askone.org/r/ABC234/projector", host_url: "https://askone.org/rooms/ABC234" };
+const SURVEY = "6f1c2a52-7d3e-4f1b-9a7e-0c5b8f2d4e11";
+const QUESTION = "0b9e8d7c-6a5f-4e3d-8c2b-1a0f9e8d7c6b";
+
+test("host actions POST only the documented fields as JSON, with the token in the header", async () => {
+  const { calls, fetchImpl } = fakeFetch([
+    { body: roomBody }, { body: roomBody }, { body: roomBody },
+    { body: { ...roomBody, survey: { id: SURVEY } } }, { body: { ...roomBody, survey: { id: SURVEY } } },
+    { body: { ...roomBody, question: { id: QUESTION, status: "approved" } } },
+    { body: { ...roomBody, question: { id: QUESTION, status: "answered" } } },
+  ]);
+  const client = createClient({ token: "secret", fetchImpl });
+  await client.createRoom({ name: "Workshop", moderation: "ai", extra: "dropped" });
+  await client.openRoom("ABC234");
+  await client.closeRoom("ABC234");
+  await client.createSurvey("ABC234", { question: "Next?", type: "poll", options: ["A", "B"], bogus: 1 });
+  await client.closeSurvey("ABC234", SURVEY, { show_results: false });
+  await client.moderateQuestion("ABC234", QUESTION, "approve");
+  await client.answerQuestion("ABC234", QUESTION, {});
+  assert.deepEqual(calls.map((c) => `${c.init.method} ${c.url.pathname}`), [
+    "POST /api/v1/rooms",
+    "POST /api/v1/rooms/ABC234/open",
+    "POST /api/v1/rooms/ABC234/close",
+    "POST /api/v1/rooms/ABC234/surveys",
+    `POST /api/v1/rooms/ABC234/surveys/${SURVEY}/close`,
+    `POST /api/v1/rooms/ABC234/questions/${QUESTION}/moderate`,
+    `POST /api/v1/rooms/ABC234/questions/${QUESTION}/answer`,
+  ]);
+  const bodies = calls.map((c) => JSON.parse(c.init.body));
+  assert.deepEqual(bodies[0], { name: "Workshop", moderation: "ai" });
+  assert.deepEqual(bodies[1], {});
+  assert.deepEqual(bodies[3], { question: "Next?", type: "poll", options: ["A", "B"] });
+  assert.deepEqual(bodies[4], { show_results: false });
+  assert.deepEqual(bodies[5], { action: "approve" });
+  assert.deepEqual(bodies[6], {});
+  for (const c of calls) {
+    assert.equal(c.init.headers["Content-Type"], "application/json");
+    assert.equal(c.init.headers.Authorization, "Bearer secret");
+    assert.equal(c.init.redirect, "error");
+    assert.ok(!c.url.href.includes("secret"));
+    assert.equal(c.url.search, "");
+  }
+});
+
+test("reads stay GET with no body", async () => {
+  const { calls, fetchImpl } = fakeFetch([{ body: { rooms: [], next_cursor: null } }]);
+  await createClient({ token: "t", fetchImpl }).listRooms();
+  assert.equal(calls[0].init.method, "GET");
+  assert.equal(calls[0].init.body, undefined);
+  assert.equal(calls[0].init.headers["Content-Type"], undefined);
+});
+
+test("survey and question ids must be UUIDs before anything is sent", async () => {
+  const { calls, fetchImpl } = fakeFetch([]);
+  const client = createClient({ token: "t", fetchImpl });
+  for (const call of [() => client.closeSurvey("ABC234", "../../rooms"), () => client.moderateQuestion("ABC234", "1 OR 1", "hide"),
+    () => client.answerQuestion("ABC234", undefined, {})]) {
+    const error = await call().catch((e) => e);
+    assert.equal(error.code, "invalid_request");
+  }
+  assert.equal(calls.length, 0);
+});
+
+test("a write refused for a read-only token surfaces the server's own instruction", async () => {
+  const { fetchImpl } = fakeFetch([{ status: 403, body: { error: { code: "insufficient_scope", message: "This token is read-only. Create a new token to change rooms." } } }]);
+  const error = await createClient({ token: "ak_0123456789abcdef.secret", fetchImpl }).closeRoom("ABC234").catch((e) => e);
+  assert.equal(error.code, "insufficient_scope");
+  assert.match(error.message, /Create a new token/);
+});
+
+test("a write reply without the expected object is not reported as success", async () => {
+  const { fetchImpl } = fakeFetch([{ body: { room } }]);
+  const error = await createClient({ token: "t", fetchImpl }).moderateQuestion("ABC234", QUESTION, "hide").catch((e) => e);
+  assert.equal(error.code, "invalid_response");
+});

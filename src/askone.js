@@ -1,8 +1,10 @@
-// AskOne host API client (https://askone.org/api/v1) and the Q&A Markdown
-// that get_room_qa returns. Read-only: the API cannot change anything.
+// AskOne host API client (https://askone.org/api/v1) and the Q&A Markdown that
+// get_room_qa returns. Reads need rooms:read; the host actions need rooms:write,
+// which only tokens created after the write API shipped carry.
 
 export const DEFAULT_URL = "https://askone.org";
 const ROOM_CODE = /^[A-Za-z0-9]{6}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // Visible ASCII only: anything else could make fetch echo the header value in an error.
 const TOKEN = /^[!-~]{1,512}$/;
 const PAGE_LIMIT = 100;
@@ -30,6 +32,14 @@ export function roomCode(code) {
   return code;
 }
 
+/** Survey and question ids go into the URL path, so only a UUID may. */
+export function childId(id, label) {
+  if (typeof id !== "string" || !UUID.test(id)) {
+    throw new AskOneError(400, "invalid_request", `${label} is a UUID from a read tool.`);
+  }
+  return id;
+}
+
 export function baseOrigin(value = DEFAULT_URL) {
   let url;
   // The value is never echoed: it could carry credentials (https://user:secret@host).
@@ -51,16 +61,21 @@ export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone
   }
   const origin = baseOrigin(baseUrl);
 
-  async function get(path, params, shape, signal) {
+  async function request(method, path, { params = {}, payload } = {}, shape, signal) {
     const url = new URL(path, origin);
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
     }
+    const headers = { Authorization: `Bearer ${token}`, Accept: "application/json", "User-Agent": userAgent };
+    if (payload !== undefined) headers["Content-Type"] = "application/json";
     let response;
     try {
       // redirect: "error" keeps the token from following a redirect to another host.
+      // Writes are never retried here: a lost reply is retried by the caller with a request_id.
       response = await fetchImpl(url, {
-        headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "User-Agent": userAgent },
+        method,
+        headers,
+        body: payload === undefined ? undefined : JSON.stringify(payload),
         redirect: "error",
         signal: withTimeout(signal),
       });
@@ -91,7 +106,14 @@ export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone
     return body;
   }
 
-  const roomPage = (body) => body.room && typeof body.room === "object" && Array.isArray(body.questions);
+  const get = (path, params, shape, signal) => request("GET", path, { params }, shape, signal);
+  const post = (path, payload, shape, signal) => request("POST", path, { payload }, shape, signal);
+  const isObject = (value) => Boolean(value) && typeof value === "object";
+  const roomPage = (body) => isObject(body.room) && Array.isArray(body.questions);
+  const hasRoom = (body) => isObject(body.room);
+  const hasSurvey = (body) => isObject(body.room) && isObject(body.survey);
+  const hasQuestion = (body) => isObject(body.room) && isObject(body.question);
+  const room = (code) => `/api/v1/rooms/${roomCode(code)}`;
   return {
     listRooms: async ({ limit, cursor } = {}, signal) =>
       get("/api/v1/rooms", { limit, cursor }, (body) => Array.isArray(body.rooms), signal),
@@ -99,6 +121,22 @@ export function createClient({ token, baseUrl = DEFAULT_URL, userAgent = "askone
       get(`/api/v1/rooms/${roomCode(code)}`, { limit, cursor, sort }, roomPage, signal),
     getSurveys: async (code, signal) =>
       get(`/api/v1/rooms/${roomCode(code)}/surveys`, {}, (body) => Array.isArray(body.surveys), signal),
+
+    // Host actions (rooms:write). Each body carries only documented fields; undefined ones are dropped.
+    createRoom: async ({ name, description, moderation, open, request_id } = {}, signal) =>
+      post("/api/v1/rooms", { name, description, moderation, open, request_id }, hasRoom, signal),
+    openRoom: async (code, signal) => post(`${room(code)}/open`, {}, hasRoom, signal),
+    closeRoom: async (code, signal) => post(`${room(code)}/close`, {}, hasRoom, signal),
+    createSurvey: async (code, { question, type, options, allow_multiple, correct_option, scale, low_label, high_label,
+      show_results, launch, request_id } = {}, signal) =>
+      post(`${room(code)}/surveys`, { question, type, options, allow_multiple, correct_option, scale, low_label, high_label,
+        show_results, launch, request_id }, hasSurvey, signal),
+    closeSurvey: async (code, surveyId, { show_results } = {}, signal) =>
+      post(`${room(code)}/surveys/${childId(surveyId, "survey_id")}/close`, { show_results }, hasSurvey, signal),
+    moderateQuestion: async (code, questionId, action, signal) =>
+      post(`${room(code)}/questions/${childId(questionId, "question_id")}/moderate`, { action }, hasQuestion, signal),
+    answerQuestion: async (code, questionId, { answer } = {}, signal) =>
+      post(`${room(code)}/questions/${childId(questionId, "question_id")}/answer`, { answer }, hasQuestion, signal),
   };
 }
 

@@ -2,21 +2,29 @@
   "manifest_version": "0.2",
   "name": "askone",
   "display_name": "AskOne",
-  "version": "1.1.1",
-  "description": "Read your AskOne live Q&A rooms, audience questions and poll results, and draft a FAQ from them.",
-  "long_description": "AskOne is live Q&A and polling for talks, webinars, classes and meetings. This extension gives Claude read-only access to your organization's rooms: list them, read a room's questions as a Markdown FAQ draft (answered first, approved by votes, pending last), read raw question pages, and read aggregate poll, quiz, rating and word-cloud results. It cannot create, moderate or delete anything. An organization admin creates the API token in AskOne: organization switcher, Manage, API tokens.",
-  "author": { "name": "HURYN Sp. z o.o.", "url": "https://askone.org" },
+  "version": "1.2.0",
+  "description": "Run your AskOne live Q&A from Claude: start rooms, launch polls, moderate and answer questions, then draft a FAQ from them.",
+  "long_description": "AskOne is live Q&A and polling for talks, webinars, classes and meetings. This extension lets Claude run your organization's rooms: list them, create, open and close rooms, add and launch polls, quizzes, ratings and word clouds, close polls, approve or hide waiting questions, mark questions answered with a written answer, read a room's questions as a Markdown FAQ draft, and read poll results. It cannot ask questions, vote or delete anything. An organization admin creates the API token in AskOne: organization switcher, Manage, API tokens; tokens created before the host actions shipped can only read.",
+  "author": {
+    "name": "HURYN Sp. z o.o.",
+    "url": "https://askone.org"
+  },
   "homepage": "https://askone.org",
   "documentation": "https://github.com/phuryn/askone#mcp-server",
   "support": "https://github.com/phuryn/askone/issues",
-  "repository": { "type": "git", "url": "https://github.com/phuryn/askone" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phuryn/askone"
+  },
   "icon": "icon.png",
   "server": {
     "type": "node",
     "entry_point": "src/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/src/index.js"],
+      "args": [
+        "${__dirname}/src/index.js"
+      ],
       "env": {
         "ASKONE_API_TOKEN": "${user_config.api_token}",
         "ASKONE_URL": "${user_config.base_url}"
@@ -24,10 +32,50 @@
     }
   },
   "tools": [
-    { "name": "list_rooms", "description": "List your organization's rooms, newest first, with question and participant counts." },
-    { "name": "get_room_qa", "description": "Read a room's questions as a Markdown FAQ draft." },
-    { "name": "get_room_questions", "description": "Read one page of a room's questions as JSON." },
-    { "name": "get_survey_results", "description": "Read aggregate poll, quiz, rating and word-cloud results." }
+    {
+      "name": "list_rooms",
+      "description": "List your organization's rooms, newest first, with question and participant counts."
+    },
+    {
+      "name": "get_room_qa",
+      "description": "Read a room's questions as a Markdown FAQ draft."
+    },
+    {
+      "name": "get_room_questions",
+      "description": "Read one page of a room's questions as JSON, with ids."
+    },
+    {
+      "name": "get_survey_results",
+      "description": "Read aggregate poll, quiz, rating and word-cloud results."
+    },
+    {
+      "name": "create_room",
+      "description": "Create a room, open or prepared."
+    },
+    {
+      "name": "open_room",
+      "description": "Open a prepared room or reopen a closed one."
+    },
+    {
+      "name": "close_room",
+      "description": "Close a room and its live polls."
+    },
+    {
+      "name": "create_survey",
+      "description": "Add and launch a poll, quiz, rating or word cloud."
+    },
+    {
+      "name": "close_survey",
+      "description": "Close a poll and choose whether its results stay on screen."
+    },
+    {
+      "name": "moderate_question",
+      "description": "Approve or hide a waiting question."
+    },
+    {
+      "name": "answer_question",
+      "description": "Mark a question answered, with an optional written answer."
+    }
   ],
   "user_config": {
     "api_token": {
@@ -45,8 +93,27 @@
       "required": false
     }
   },
-  "keywords": ["askone", "live q&a", "polls", "audience questions", "faq", "slido alternative"],
+  "keywords": [
+    "askone",
+    "live q&a",
+    "polls",
+    "audience questions",
+    "moderation",
+    "faq",
+    "slido alternative"
+  ],
   "license": "MIT",
-  "privacy_policies": ["https://askone.org/privacy"],
-  "compatibility": { "platforms": ["darwin", "win32", "linux"], "runtimes": { "node": ">=20.3.0" } }
+  "privacy_policies": [
+    "https://askone.org/privacy"
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=20.3.0"
+    }
+  }
 }

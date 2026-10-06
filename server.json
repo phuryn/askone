@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.phuryn/askone",
   "title": "AskOne",
-  "description": "Read your live Q&A rooms, audience questions and poll results, and draft a FAQ from them.",
-  "version": "1.1.1",
+  "description": "Run AskOne live Q&A and polls: start rooms, launch polls, moderate, then draft a FAQ.",
+  "version": "1.2.0",
   "websiteUrl": "https://askone.org",
   "repository": {
     "url": "https://github.com/phuryn/askone",
@@ -19,7 +19,7 @@
     {
       "registryType": "npm",
       "identifier": "askone-mcp",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "transport": {
         "type": "stdio"
       },
@@ -43,7 +43,7 @@
     },
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/phuryn/askone/releases/download/v1.1.1/askone.mcpb",
+      "identifier": "https://github.com/phuryn/askone/releases/download/v1.2.0/askone.mcpb",
       "fileSha256": "f6593fd22073292e35a3dbb7bbb433efcdc7daa043eae941dc4218841965e094",
       "transport": {
         "type": "stdio"
