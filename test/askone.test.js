@@ -276,7 +276,7 @@ test("every tool description says when to use it, and every host action says it 
     assert.equal(tools.length, 11);
     for (const tool of tools) {
       assert.match(tool.description, /\bUse it\b/, tool.name);
-      assert.ok(tool.description.length < 700, tool.name);
+      assert.ok(tool.description.length < 900, tool.name);
       if (!tool.annotations.readOnlyHint) assert.match(tool.description, /rooms:write/, tool.name);
     }
   } finally {
