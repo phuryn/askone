@@ -2,7 +2,7 @@
 
 [![AskOne: Live Q&A and Polls MCP server – quality and maintenance score on Glama](https://glama.ai/mcp/servers/phuryn/askone/badges/card.svg)](https://glama.ai/mcp/servers/phuryn/askone)
 
-[![CI](https://github.com/phuryn/askone/actions/workflows/ci.yml/badge.svg)](https://github.com/phuryn/askone/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/askone-mcp)](https://www.npmjs.com/package/askone-mcp) [![AskOne MCP connector – tool definition quality and endpoint health on Glama](https://glama.ai/mcp/connectors/io.github.phuryn/askone/badges/score.svg)](https://glama.ai/mcp/connectors/io.github.phuryn/askone)
+[![CI](https://github.com/phuryn/askone/actions/workflows/ci.yml/badge.svg)](https://github.com/phuryn/askone/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/askone-mcp)](https://www.npmjs.com/package/askone-mcp)
 
 The AskOne MCP server lets an AI agent run your organization's live audience Q&A and polls: start a room, add and launch a poll, approve or hide waiting questions, mark questions answered, close the room, and afterwards read the questions as a FAQ draft and the poll results. It cannot ask questions or vote: those are the audience's, and an agent that could would be stuffing the queue and the ranking. Nothing can be deleted through it.
 
