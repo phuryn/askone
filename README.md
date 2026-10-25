@@ -119,7 +119,7 @@ This repository is also AskOne's public **issue tracker**. The AskOne app itself
 
 - Website: https://askone.org
 - Support: https://askone.org/support
-- Status: https://stats.uptimerobot.com/Cb2jSYpwtm
+- Status: https://staygreen.io/s/askone
 - Terms of Use: https://askone.org/terms
 - Privacy Policy: https://askone.org/privacy
 - Pricing: https://askone.org/pricing
