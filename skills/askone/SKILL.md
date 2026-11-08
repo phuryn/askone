@@ -65,11 +65,11 @@ For the method behind a good session (what to ask, when to open questions, how t
 
 **Close it out.**
 1. `close_room`, once the host says the session is over.
-2. `get_room_qa` for the FAQ draft: answered questions with their answers, open ones grouped by theme with a suggested owner each.
+2. `get_room_qa` for the FAQ draft, read to the end (on the hosted server, call again with `cursor` set to the reply's `next_cursor` until `next_cursor` is null). The FAQ takes approved and answered questions only: answered ones with their answers, open ones grouped by theme with a suggested owner each. Questions still waiting for moderation never go into anything shared; list them for the host to approve or drop.
 3. `get_survey_results` for the polls; a quiz's correct answer appears only once it has closed.
 4. A short report: questions, how many were answered live, participants, poll results, top themes, and the open questions with owners.
 
-**Find an earlier session** with `list_rooms` (follow `next_cursor` until it is null), then read it by code.
+**Find an earlier session** with `list_rooms` (for older rooms, call again with `cursor` set to the reply's `next_cursor`, until `next_cursor` is null), then read it by code.
 
 ## Limits and errors (read 2026-11-08)
 
