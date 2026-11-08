@@ -8,3 +8,5 @@ server.json
 scripts/
 AGENTS.md
 glama.json
+skills/
+.claude-plugin/

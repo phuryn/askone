@@ -73,6 +73,15 @@ To run it straight from this repository instead of npm (needs Git): `npx -y gith
 
 For a self-hosted AskOne, also set `ASKONE_URL` to its address (https only).
 
+## Agent skill and Claude Code plugin
+
+The `askone` skill teaches an agent to host a session end to end: prepare the room and its polls, open it, moderate, launch each poll when its topic comes up, mark questions answered, then close the room and write the FAQ and the report. It lives in [`skills/askone`](skills/askone/SKILL.md).
+
+- **Any agent** (Claude Code, Codex, Cursor and others): `npx skills add phuryn/askone`
+- **Claude Code plugin**, the skill and the hosted server in one install: `/plugin install askone --marketplace phuryn/askone` (Claude Code 2.1.275 or later; on older versions, `/plugin marketplace add phuryn/askone`, then `/plugin install askone@askone`). Then run `/mcp`, choose askone and sign in.
+
+For the method behind a good Q&A or poll on any tool, the free [`live-qa` and `live-polls`](https://github.com/phuryn/pm-skills/tree/main/pm-execution/skills) skills in pm-skills use AskOne by default.
+
 ## Tools
 
 Reading (any token, or signed in):

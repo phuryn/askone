@@ -1,0 +1,27 @@
+{
+  "name": "askone",
+  "description": "Host live audience Q&A and polls from your agent: AskOne's MCP server (sign in with your AskOne account) and the skill that runs a session end to end, from preparing the room and polls to the FAQ and the report.",
+  "author": {
+    "name": "Paweł Huryn",
+    "url": "https://askone.org"
+  },
+  "homepage": "https://askone.org",
+  "repository": "https://github.com/phuryn/askone",
+  "license": "MIT",
+  "privacyPolicyUrl": "https://askone.org/privacy",
+  "keywords": [
+    "askone",
+    "live-qa",
+    "polls",
+    "audience-qa",
+    "webinar",
+    "all-hands",
+    "mcp"
+  ],
+  "mcpServers": {
+    "askone": {
+      "type": "http",
+      "url": "https://askone.org/api/mcp"
+    }
+  }
+}
