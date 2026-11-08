@@ -17,9 +17,9 @@ For the method behind a good session (what to ask, when to open questions, how t
 - **Claude, Cursor, VS Code and other clients that sign in (OAuth):** add the same address as a custom connector or remote server.
 - **Who can connect:** an administrator of the AskOne organization, which must already have its dashboard (if it was just created, open the dashboard once). A moderator who signs in is refused.
 
-**An API token is a password.** An organization admin creates one in AskOne: the organization switcher → **Manage** → **API tokens**. It reads every room in the organization, pending questions and private results included. Never put it in a chat, a commit or a command line; read it into a variable with `read -rsp 'AskOne API token: ' ASKONE_API_TOKEN; echo; export ASKONE_API_TOKEN` and pass `--header "Authorization: Bearer $ASKONE_API_TOKEN"`. Tokens created before October 2026 can only read: create a new one for the host actions and revoke the old one.
+**An API token is a password.** An organization admin creates one in AskOne: the organization switcher → **Manage** → **API tokens**. It reads every room in the organization, pending questions and private results included. Never put it in a chat, a commit or a command line, and never let the shell expand it into one: an expanded `$ASKONE_API_TOKEN` lands in the process's arguments. Keep it in the environment (`read -rsp 'AskOne API token: ' ASKONE_API_TOKEN; echo; export ASKONE_API_TOKEN`) and give the client only the variable's name, in single quotes: `claude mcp add --scope project --transport http askone https://askone.org/api/mcp --header 'Authorization: Bearer ${ASKONE_API_TOKEN}'`. That writes `.mcp.json` with the name alone, and Claude Code fills in the value when it starts. Tokens created before October 2026 can only read: create a new one for the host actions and revoke the old one.
 
-**Locally:** `npx -y askone-mcp` (Node.js 20.3 or later) with `ASKONE_API_TOKEN` set; [the repository README](https://github.com/phuryn/askone#connect) has the config for Claude Desktop, Cursor and others.
+**Locally:** `npx -y askone-mcp` (Node.js 20.3 or later) with `ASKONE_API_TOKEN` in its environment (in Claude Code: `claude mcp add --scope project askone -e 'ASKONE_API_TOKEN=${ASKONE_API_TOKEN}' -- npx -y askone-mcp`); [the repository README](https://github.com/phuryn/askone#connect) has the config for Claude Desktop, Cursor and others.
 
 **Check the connection with `list_rooms`.** It needs only read access and returns the organization's rooms.
 
@@ -36,7 +36,7 @@ For the method behind a good session (what to ask, when to open questions, how t
 | `create_survey` | A poll (2 to 8 `options`, `allow_multiple`), quiz (`options` and zero-based `correct_option`), rating (`scale` 5 or 10, optional `low_label`, `high_label`) or word cloud, launched at once or saved as a draft with `launch: false`. `show_results: false` keeps results from the audience |
 | `close_survey` | Stops a live survey; `show_results` sets whether the audience may see its results |
 | `moderate_question` | `approve` or `hide` a waiting question; `approve` also restores a question the AI hid, given its id |
-| `answer_question` | Marks an approved question answered, with an optional written `answer` (up to 1,000 characters) the audience sees |
+| `answer_question` | Marks an approved question answered, or updates an answered one, with an optional written `answer` (up to 1,000 characters) the audience sees |
 
 **The agent can't ask a question, vote, answer a poll or delete anything.** Those belong to the audience, and an agent that could would stuff the queue and the ranking. Room settings, branding, moderators, plans and banning a participant are in the console (`host_url`), which needs a browser sign-in.
 
@@ -79,11 +79,12 @@ For the method behind a good session (what to ask, when to open questions, how t
 
 | Error | Means | Do |
 |---|---|---|
-| `room_limit_reached`, `prepared_room_limit_reached` | the plan's open or prepared rooms are in use | ask the host which room to close, or to upgrade |
+| `room_limit_reached` | all the plan's open rooms are in use | ask the host which open room to close, or to upgrade |
+| `prepared_room_limit_reached` | all the plan's prepared rooms are in use; closing an open room doesn't free one | reuse a prepared room (`list_rooms` shows its status), or ask the host to open or remove one in the console |
 | `survey_limit_reached` | the room has 50 surveys | use a new room |
 | `room_not_open` | launching a poll in a prepared or closed room, or closing a prepared room | `open_room` first, with the host's go |
 | `survey_not_draft`, `survey_not_live` | the survey isn't in the state the call needs | read `get_survey_results` for its status |
-| `question_not_moderatable`, `question_not_commentable` | only waiting questions can be hidden; only approved ones answered | approve it first, or leave it |
+| `question_not_moderatable`, `question_not_commentable` | only waiting questions can be hidden; only approved or already-answered questions can be answered | for a waiting question, approve it first with the host's go, or leave it |
 | `not_found` | no such room or question in this organization | check the code with `list_rooms` |
 | `insufficient_scope` | a read-only token | create a new token, revoke the old one |
 | `admin_required`, `organization_required`, `organization_not_found` | signed in as a non-admin, no organization chosen, or no dashboard yet | sign in as an admin and open the organization's dashboard once |

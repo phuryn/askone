@@ -28,7 +28,7 @@ claude mcp add --transport http askone https://askone.org/api/mcp
 
 The hosted server also takes an **API token**, and the local package needs one. An organization admin creates one in AskOne: open the organization switcher, choose **Manage**, then **API tokens**. A token can read every room in that organization, including pending questions and private poll results, and change its rooms, so treat it like a password and keep it out of shared configuration. **Tokens created before the host actions shipped (October 2026) can only read**; to use the host actions, create a new token and revoke the old one.
 
-The commands below read the token from `ASKONE_API_TOKEN`. Set it with a prompt, so it stays out of your shell history:
+The commands below read the token from `ASKONE_API_TOKEN`. Set it with a prompt, so it stays out of your shell history, and give the client only the variable's name in single quotes, so the shell never expands the token into a command's arguments:
 
 ```bash
 read -rsp 'AskOne API token: ' ASKONE_API_TOKEN; echo; export ASKONE_API_TOKEN
@@ -42,15 +42,17 @@ Claude Code:
 
 ```bash
 claude mcp add --transport http askone https://askone.org/api/mcp \
-  --header "Authorization: Bearer $ASKONE_API_TOKEN"
+  --scope project --header 'Authorization: Bearer ${ASKONE_API_TOKEN}'
 ```
+
+This and the local command below write `.mcp.json` holding only the variable's name; Claude Code fills in the value from your environment when it starts, and the file is safe to commit.
 
 #### Local: the `askone-mcp` package (Node.js 20.3+)
 
 Claude Code:
 
 ```bash
-claude mcp add askone -e ASKONE_API_TOKEN="$ASKONE_API_TOKEN" -- npx -y askone-mcp
+claude mcp add --scope project askone -e 'ASKONE_API_TOKEN=${ASKONE_API_TOKEN}' -- npx -y askone-mcp
 ```
 
 Claude Desktop: download `askone.mcpb` from the [latest release](https://github.com/phuryn/askone/releases/latest) and open it. Desktop asks for the token and stores it as a secret.
